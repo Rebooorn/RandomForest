@@ -10,6 +10,8 @@ DensityTree::DensityTree(unsigned int D, unsigned int n_thresholds, Mat X)
 }
 void DensityTree::train()
 {
+    // train theta for each S, note for density tree all data is used for estimation
+    
     cout << "Not implemented" << endl;//Temporla
 }
 Mat DensityTree::densityXY()
