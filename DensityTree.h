@@ -33,7 +33,10 @@ private:
     unsigned int D;
     unsigned int n_thresholds;
     Mat X;
-  //  auto dice;	// random number generator
+	friend double getInfoGain(Mat& SL, Mat& SR, Mat& S);
+   // auto dice;	// random number generator
+	vector<int> leftS;
+	vector<int> rightS;
 };
 
 #endif /* DENSITYTREE_H */
