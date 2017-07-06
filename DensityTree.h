@@ -36,7 +36,8 @@ private:
     unsigned int D;
     unsigned int n_thresholds;
     Mat X;
-
+	vector<WeakLearner> nodeArray;
+	vector<Mat> subsetBuffer;
    // auto dice;	// random number generator
 	vector<int> leftS;
 	vector<int> rightS;
@@ -47,9 +48,17 @@ class WeakLearner
 public:
 	WeakLearner();
 	//~WeakLearner();
-
+	void isInnerNode(double);
+	void isLeafNode(double,double,double,double,int);
 private:
+	bool isLeaf = false;	
 	double theta = 0;
+	double meanX = 0;
+	double meanY = 0;
+	double sdX = 0;
+	double sdY = 0;
+	double Num = 0;	//used for only leaf nodes
+	
 };
 
 
