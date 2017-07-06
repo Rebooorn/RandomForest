@@ -14,6 +14,7 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/core/core.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
+#include "opencv2/ml/ml.hpp"
 #include <vector>
 
 using namespace cv;
@@ -29,15 +30,28 @@ public:
     DensityTree(unsigned int D, unsigned int R, Mat X);
     void train();
     Mat densityXY();
+	friend double getInfoGain(Mat& SL, Mat& SR, Mat& S);
+	void getRandomArray(vector<double>& tar ,const double& min,const double& max);
 private:
     unsigned int D;
     unsigned int n_thresholds;
     Mat X;
-	friend double getInfoGain(Mat& SL, Mat& SR, Mat& S);
+
    // auto dice;	// random number generator
 	vector<int> leftS;
 	vector<int> rightS;
 };
+
+class WeakLearner
+{
+public:
+	WeakLearner();
+	//~WeakLearner();
+
+private:
+	double theta = 0;
+};
+
 
 #endif /* DENSITYTREE_H */
 
