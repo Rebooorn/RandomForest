@@ -27,6 +27,10 @@ int main(int argc, char** argv)
     densityXY.push_back(densityForest(n_levels,n_thresholds,50,dataMatrix));
     densityXY.push_back(densityForest(n_levels,n_thresholds,100,dataMatrix));
     
+	cout << *densityXY.begin() << endl;
+	cout << *(densityXY.begin()+1) << endl;
+	cout << *(densityXY.begin()+2) << endl;
+
     plotDensities(dataMatrix,densityXY,0,"Densities X");
     plotDensities(dataMatrix,densityXY,1,"Densities Y");
 	
@@ -43,7 +47,7 @@ Mat generateData()
     Mat B =  Mat(500, dim, CV_64F);
     cv::theRNG().fill(B, cv::RNG::NORMAL, -9, 3);
     Mat dataMatrix;
-          (A, B, dataMatrix);
+    vconcat(A, B, dataMatrix);
 
     return dataMatrix;
 }
@@ -74,11 +78,12 @@ Mat densityForest(unsigned int D, unsigned int numberOfThreshodls,unsigned int n
     Mat density=Mat::zeros(1000,2,CV_64F);
     for (int i=0;i<numberOfTrees;i++)
     {
-        T= new DensityTree(D,numberOfThreshodls,X);
+		//cout << X << endl;
+		T= new DensityTree(D,numberOfThreshodls,X);
         T->train();
-        density+=T->densityXY();
+		density+=T->densityXY();
     }
-    return density/(double)numberOfTrees;
+	return density/(double)numberOfTrees;
 }
 
 void plotData(Mat dataMatrix, char const * name)
@@ -126,6 +131,7 @@ void plotDensities(Mat data, vector<Mat> density, int dim, char const * name)
     double nmax=900;
     int r=0,g=0,b=0;
     for(int j=0; j< n_densities;j++)
+	//for (int j = 0; j< 1;j++)
     {
         if(j==0)r=250;
         if(j==1)g=250;

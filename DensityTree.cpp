@@ -21,7 +21,7 @@ void DensityTree::train()
     // train thetas for each node , note that for density tree all data is used for estimation
 	// push each 
 	int nodeCount = 0;
-	bool isLeaf;
+	bool isLeaf = false;
 	vector<double> thres(n_thresholds);	//random thresholds in [xmin,xmax]
 	double xmin, xmax;
 	minMaxIdx(X, &xmin, &xmax);
@@ -37,6 +37,7 @@ void DensityTree::train()
 			auto max_thres = thres.begin();
 			auto iter = thres.begin();
 			Mat SL, SR;
+			Mat max_SL, max_SR; //buffer for SL and SR with max info
 			Mat S = *subsetBuffer.begin();
 			while (iter != thres.end()) {
 				// separate X into SL and SR
@@ -53,15 +54,18 @@ void DensityTree::train()
 				if (info_gain > max_info_gain) {
 					max_info_gain = info_gain;
 					max_thres = iter;
+					max_SL = SL.clone();
+					max_SR = SR.clone();
 				}
+				iter++;
 			}
 			// save the result of this training
 			WeakLearner node;
 			node.innerNode(*max_thres);
 			nodeArray.push_back(node);
 			// change subset buffer for next step of training
-			subsetBuffer.push_back(SL);
-			subsetBuffer.push_back(SR);
+			subsetBuffer.push_back(max_SL);
+			subsetBuffer.push_back(max_SR);
 			subsetBuffer.erase(subsetBuffer.begin());
 		}
 		// calculate the gaussian distribution model in leaf nodes
@@ -72,9 +76,9 @@ void DensityTree::train()
 			Scalar sdX;
 			Scalar sdY;
 			meanStdDev(S.col(0),meanX,sdX);
-			meanStdDev(S.col(0),meanY,sdY); 
+			meanStdDev(S.col(1),meanY,sdY); 
 			WeakLearner node;
-			node.leafNode(meanX[0],sdX[0],meanY[0],sdY[0],S.rows);
+			node.leafNode(meanX[0],sdX[0]*sdX[0],meanY[0],sdY[0]*sdY[0],S.rows);
 			nodeArray.push_back(node);
 			// update subset buffer
 			subsetBuffer.erase(subsetBuffer.begin());
@@ -88,10 +92,10 @@ void DensityTree::train()
 Mat DensityTree::densityXY()
 {
 	// density estimation of gaussian distribution
-	Mat denXY = X;
+	Mat denXY = X.clone();
 	denXY.setTo(0);
 	for(int i = 0; i < X.rows; i++){
-		double tarX = denXY.at<double> (i,0);
+		double tarX = X.at<double> (i,0);
 		auto iter = nodeArray.begin();
 		while(iter->isleafNode()==false){
 			// test over density tree
@@ -107,8 +111,8 @@ Mat DensityTree::densityXY()
 			
 		}
 		// reach leaf node;
-		denXY.at<double>(i,0) = iter->getDensity(denXY.at<double>(i,0),true);	// get X density
-		denXY.at<double>(i,1) = iter->getDensity(denXY.at<double>(i,1),false); // get Y density
+		denXY.at<double>(i,0) = iter->getDensity(X.at<double>(i,0),true);	// get X density
+		denXY.at<double>(i,1) = iter->getDensity(X.at<double>(i,1),false); // get Y density
 	}
 
     return denXY;//Temporal
@@ -164,12 +168,14 @@ double getInfoGain(Mat& SL, Mat& SR, Mat& S) {
 	// return (double) infoGain
 	Mat CovarL, CovarR, CovarA ,mean;
 	// calculation covariance matrix
-	calcCovarMatrix(SL, CovarL, mean, CV_COVAR_NORMAL|CV_COVAR_ROWS);
-	calcCovarMatrix(SR, CovarR, mean, CV_COVAR_NORMAL|CV_COVAR_ROWS);
-	calcCovarMatrix(S, CovarA, mean, CV_COVAR_NORMAL|CV_COVAR_ROWS);
-	// calculation determinant and information gain
-	double info_gain = log(determinant(CovarA)) - (double)SL.rows / (double)S.rows*log(determinant(CovarL)) - (double)SR.rows / (double)S.rows*log(determinant(CovarR));
-	
+	double info_gain = 0;
+	if (SL.rows > 2  && SR.rows > 2) {
+		calcCovarMatrix(SL, CovarL, mean, CV_COVAR_NORMAL | CV_COVAR_ROWS);
+		calcCovarMatrix(SR, CovarR, mean, CV_COVAR_NORMAL | CV_COVAR_ROWS);
+		calcCovarMatrix(S, CovarA, mean, CV_COVAR_NORMAL | CV_COVAR_ROWS);
+		// calculation determinant and information gain
+		info_gain = log(determinant(CovarA)) - (double)SL.rows / (double)S.rows*log(determinant(CovarL)) - (double)SR.rows / (double)S.rows*log(determinant(CovarR));
+	}
 	return info_gain;
 }
 
