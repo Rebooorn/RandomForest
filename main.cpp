@@ -43,7 +43,7 @@ Mat generateData()
     Mat B =  Mat(500, dim, CV_64F);
     cv::theRNG().fill(B, cv::RNG::NORMAL, -9, 3);
     Mat dataMatrix;
-    vconcat(A, B, dataMatrix);
+          (A, B, dataMatrix);
 
     return dataMatrix;
 }

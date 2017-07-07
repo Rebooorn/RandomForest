@@ -22,7 +22,9 @@ using namespace std;
 
 #ifndef DENSITYTREE_H
 #define DENSITYTREE_H
+# define PI 3.14159265358979323846
 
+class WeakLearner;
 class DensityTree 
 {
 public:
@@ -33,7 +35,7 @@ public:
 	friend double getInfoGain(Mat& SL, Mat& SR, Mat& S);
 	void getRandomArray(vector<double>& tar ,const double& min,const double& max);
 private:
-    unsigned int D;
+    unsigned int D;	//tree depth
     unsigned int n_thresholds;
     Mat X;
 	vector<WeakLearner> nodeArray;
@@ -48,10 +50,13 @@ class WeakLearner
 public:
 	WeakLearner();
 	//~WeakLearner();
-	void isInnerNode(double);
-	void isLeafNode(double,double,double,double,int);
+	void innerNode(double);
+	void leafNode(double,double,double,double,int);
 	int getLeftIdx(int);	//get index of left and right child;
 	int getRightIdx(int);
+	bool isleafNode();
+	double getTheta();
+	double getDensity(double,bool);		// true for X, false for Y
 private:
 	bool isLeaf = false;	
 	double theta = 0;

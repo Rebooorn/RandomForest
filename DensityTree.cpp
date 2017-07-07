@@ -5,7 +5,7 @@
 #include <cmath>
 
 using namespace cv;
-using namespace cv::ml;
+//using namespace cv::ml;
 using namespace std;
 
 double getInfoGain(Mat&, Mat&, Mat&);
@@ -21,15 +21,15 @@ void DensityTree::train()
     // train thetas for each node , note that for density tree all data is used for estimation
 	// push each 
 	int nodeCount = 0;
-	bool ifLeaf
+	bool isLeaf;
 	vector<double> thres(n_thresholds);	//random thresholds in [xmin,xmax]
 	double xmin, xmax;
 	minMaxIdx(X, &xmin, &xmax);
 	getRandomArray(thres, xmin, xmax);
 	subsetBuffer.push_back(X);
-	while(nodeCount!= pow(2,n_level)-1){
+	while(nodeCount!= pow(2,D)-1){
 		// determine isLeaf
-		if (nodeCount> pow(2,n_level-1)-2) isLeaf = true;
+		if (nodeCount> pow(2,D-1)-2) isLeaf = true;
 		else isLeaf = false;
 		if(!isLeaf){	
 			double theta_tmp = 0;
@@ -57,7 +57,7 @@ void DensityTree::train()
 			}
 			// save the result of this training
 			WeakLearner node;
-			node.isInnerNode(*max_thres);
+			node.innerNode(*max_thres);
 			nodeArray.push_back(node);
 			// change subset buffer for next step of training
 			subsetBuffer.push_back(SL);
@@ -74,7 +74,7 @@ void DensityTree::train()
 			meanStdDev(S.col(0),meanX,sdX);
 			meanStdDev(S.col(0),meanY,sdY); 
 			WeakLearner node;
-			node.isLeafNode(meanX[0],sdX[0],meanY[0],sdY[0],S.rows);
+			node.leafNode(meanX[0],sdX[0],meanY[0],sdY[0],S.rows);
 			nodeArray.push_back(node);
 			// update subset buffer
 			subsetBuffer.erase(subsetBuffer.begin());
@@ -91,10 +91,27 @@ Mat DensityTree::densityXY()
 	Mat denXY = X;
 	denXY.setTo(0);
 	for(int i = 0; i < X.rows; i++){
-		double = 
+		double tarX = denXY.at<double> (i,0);
+		auto iter = nodeArray.begin();
+		while(iter->isleafNode()==false){
+			// test over density tree
+			int thisIdx = distance(nodeArray.begin(),iter);
+			if( tarX < iter->getTheta() ){
+				// go left;
+				iter = nodeArray.begin()+iter->getLeftIdx(thisIdx);
+			}
+			else{
+				// go right;
+				iter = nodeArray.begin()+iter->getRightIdx(thisIdx);
+			}
+			
+		}
+		// reach leaf node;
+		denXY.at<double>(i,0) = iter->getDensity(denXY.at<double>(i,0),true);	// get X density
+		denXY.at<double>(i,1) = iter->getDensity(denXY.at<double>(i,1),false); // get Y density
 	}
 
-    return X;//Temporal
+    return denXY;//Temporal
 }
 
 void DensityTree::getRandomArray(vector<double>& tar, const double & min, const double & max)
@@ -106,15 +123,14 @@ void DensityTree::getRandomArray(vector<double>& tar, const double & min, const 
 	generate(tar.begin(), tar.end(), dice);
 }
 
-WeakLearner::WeakLearner()
-{}
+WeakLearner::WeakLearner(){}
 
-void WeakLearner::isInnerNode(double thetaIn){
+void WeakLearner::innerNode(double thetaIn){
 	theta = thetaIn;
 	isLeaf = false;
 }
 
-void WeakLearner::isLeafNode(double mx, double sx, double my, double sy,int n){
+void WeakLearner::leafNode(double mx, double sx, double my, double sy,int n){
 	meanX = mx;
 	meanY = my;
 	sdX = sx;
@@ -131,6 +147,16 @@ int WeakLearner::getLeftIdx(int thisIdx)
 int WeakLearner::getRightIdx(int thisIdx)
 {
 	return 2*thisIdx+2;
+}
+
+bool WeakLearner::isleafNode(){return isLeaf;}
+double WeakLearner::getTheta(){return theta;}
+double WeakLearner::getDensity(double val, bool dim){
+	if(dim == true){//X dim
+		return (double)Num/1000.0*1.0/sqrt(2.0*PI*sdX)*exp(-0.5*pow(val-meanX,2)/sdX);
+	}else{	// Y dim
+		return (double)Num/1000.0*1.0/sqrt(2.0*PI*sdY)*exp(-0.5*pow(val-meanY,2)/sdY);
+	}
 }
 
 double getInfoGain(Mat& SL, Mat& SR, Mat& S) {
