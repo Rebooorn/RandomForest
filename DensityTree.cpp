@@ -74,7 +74,7 @@ void DensityTree::train()
 			meanStdDev(S.col(0),meanX,sdX);
 			meanStdDev(S.col(0),meanY,sdY); 
 			WeakLearner node;
-			node.isLeafNode(meanX,sdX,meanY,sdY,S.rows);
+			node.isLeafNode(meanX[0],sdX[0],meanY[0],sdY[0],S.rows);
 			nodeArray.push_back(node);
 			// update subset buffer
 			subsetBuffer.erase(subsetBuffer.begin());
@@ -106,6 +106,9 @@ void DensityTree::getRandomArray(vector<double>& tar, const double & min, const 
 	generate(tar.begin(), tar.end(), dice);
 }
 
+WeakLearner::WeakLearner()
+{}
+
 void WeakLearner::isInnerNode(double thetaIn){
 	theta = thetaIn;
 	isLeaf = false;
@@ -118,6 +121,16 @@ void WeakLearner::isLeafNode(double mx, double sx, double my, double sy,int n){
 	sdY = sy;
 	Num = n;
 	isLeaf = true;
+}
+
+int WeakLearner::getLeftIdx(int thisIdx)
+{
+	return 2*thisIdx+1;
+}
+
+int WeakLearner::getRightIdx(int thisIdx)
+{
+	return 2*thisIdx+2;
 }
 
 double getInfoGain(Mat& SL, Mat& SR, Mat& S) {

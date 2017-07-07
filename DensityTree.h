@@ -50,6 +50,8 @@ public:
 	//~WeakLearner();
 	void isInnerNode(double);
 	void isLeafNode(double,double,double,double,int);
+	int getLeftIdx(int);	//get index of left and right child;
+	int getRightIdx(int);
 private:
 	bool isLeaf = false;	
 	double theta = 0;
