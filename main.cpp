@@ -26,6 +26,8 @@ int main(int argc, char** argv)
     densityXY.push_back(densityForest(n_levels,n_thresholds,1,dataMatrix));
     densityXY.push_back(densityForest(n_levels,n_thresholds,50,dataMatrix));
     densityXY.push_back(densityForest(n_levels,n_thresholds,100,dataMatrix));
+	
+	cout << *densityXY.begin()<<endl;
 
     plotDensities(dataMatrix,densityXY,0,"Densities X");
     plotDensities(dataMatrix,densityXY,1,"Densities Y");
@@ -111,6 +113,7 @@ void plotDensities(Mat data, vector<Mat> density, int dim, char const * name)
    
     int n_densities=density.size();
     Mat origImage = Mat(1000,1000,CV_8UC3);
+    origImage.setTo(0);
     double minValX,maxValX;
     double minValY,maxValY;
     double tempMinY,tempMaxY;

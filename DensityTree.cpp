@@ -27,10 +27,14 @@ void DensityTree::train()
 	minMaxIdx(X, &xmin, &xmax);
 	getRandomArray(thres, xmin, xmax);
 	subsetBuffer.push_back(X);
-	while(nodeCount!= pow(2,D)-1){
+	
+	while(nodeCount != pow(2,D)-1){
 		// determine isLeaf
-		if (nodeCount> pow(2,D-1)-2) isLeaf = true;
-		else isLeaf = false;
+		if (nodeCount> pow(2,D-1)-2) 
+			isLeaf = true;
+		else 
+			isLeaf = false;
+			
 		if(!isLeaf){	
 			double theta_tmp = 0;
 			double max_info_gain = 0;
@@ -39,13 +43,14 @@ void DensityTree::train()
 			Mat SL, SR;
 			Mat max_SL, max_SR; //buffer for SL and SR with max info
 			Mat S = *subsetBuffer.begin();
+			
 			while (iter != thres.end()) {
 				// separate X into SL and SR
 				SL.release();
 				SR.release();
 				double t = *iter;
-				for (int i = 0;i < X.rows;i++) {
-					if (X.at<double>(i, 0) < t) {
+				for (int i = 0;i < S.rows;i++) {
+					if (S.at<double>(i, 0) < t) {
 						SL.push_back(S.row(i));
 					}
 					else SR.push_back(S.row(i));
