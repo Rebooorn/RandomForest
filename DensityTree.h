@@ -16,6 +16,8 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/ml/ml.hpp"
 #include <vector>
+#include <random>
+#include <functional>
 
 using namespace cv;
 using namespace std;

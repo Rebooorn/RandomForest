@@ -121,10 +121,11 @@ Mat DensityTree::densityXY()
 void DensityTree::getRandomArray(vector<double>& tar, const double & min, const double & max)
 {
 	// generate random double number between min and max.
-	default_random_engine gen;
-	uniform_real_distribution<double> distribution(min, max);
-	auto dice = bind(distribution, gen);
-	generate(tar.begin(), tar.end(), dice);
+
+	//auto dice = bind(distribution, gen);
+	for (int i = 0;i < n_thresholds;i++) {
+		*(tar.begin() + i) = rand()/(double)(RAND_MAX)*(max-min)+min;
+	}
 }
 
 WeakLearner::WeakLearner(){}
